@@ -1,5 +1,5 @@
-# Android makefile for the EXFAT Module
-
+# Android makefile for the EXFAT Module, lenovo MACRO control begin
+ifeq ($(LENOVO_EXFAT),true)
 # Assume no targets will be supported
 
 # Build/Package options for lenovo target
@@ -56,7 +56,7 @@ PATCHLEVEL=$(shell grep -w "PATCHLEVEL =" $(TOP)/kernel/Makefile | sed 's/^PATCH
 include $(CLEAR_VARS)
 LOCAL_MODULE              := $(EXFAT_CODESET)_exfat.ko
 LOCAL_MODULE_KBUILD_NAME  := exfat.ko
-LOCAL_MODULE_TAGS         := debug
+LOCAL_MODULE_TAGS         := optional eng debug
 LOCAL_MODULE_DEBUG_ENABLE := true
 LOCAL_MODULE_PATH         := $(TARGET_OUT)/lib/modules/$(EXFAT_CODESET)
 include $(DLKM_DIR)/AndroidKernelModule.mk
@@ -70,3 +70,5 @@ $(shell mkdir -p $(TARGET_OUT)/lib/modules; \
 endif # DLKM check
 
 endif # supported target check
+
+endif # Android makefile for the EXFAT Module, lenovo MACRO control end
