@@ -600,7 +600,7 @@ void buf_modify(struct super_block *sb, UINT32 sec)
 	sm_V(&b_sem);
 } /* end of buf_modify */
 
-void buf_lock(struct super_block *sb, UINT32 sec)
+void exfat_buf_lock(struct super_block *sb, UINT32 sec)
 {
 	BUF_CACHE_T *bp;
 
@@ -614,7 +614,7 @@ void buf_lock(struct super_block *sb, UINT32 sec)
 	sm_V(&b_sem);
 } /* end of buf_lock */
 
-void buf_unlock(struct super_block *sb, UINT32 sec)
+void exfat_buf_unlock(struct super_block *sb, UINT32 sec)
 {
 	BUF_CACHE_T *bp;
 
