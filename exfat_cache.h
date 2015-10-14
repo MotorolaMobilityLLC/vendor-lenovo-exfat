@@ -1,4 +1,5 @@
 /*
+ *  Copyright (C) 2012-2013 Samsung Electronics Co., Ltd.
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -35,8 +36,9 @@
 #ifndef _EXFAT_CACHE_H
 #define _EXFAT_CACHE_H
 
+#include <linux/fs.h>
+#include <linux/types.h>
 #include "exfat_config.h"
-#include "exfat_global.h"
 
 /*----------------------------------------------------------------------*/
 /*  Constant & Macro Definitions                                        */
@@ -54,9 +56,9 @@ typedef struct __BUF_CACHE_T {
 	struct __BUF_CACHE_T *prev;
 	struct __BUF_CACHE_T *hash_next;
 	struct __BUF_CACHE_T *hash_prev;
-	INT32                drv;
-	UINT32               sec;
-	UINT32               flag;
+	s32                drv;
+	u32               sec;
+	u32               flag;
 	struct buffer_head   *buf_bh;
 } BUF_CACHE_T;
 
@@ -64,19 +66,19 @@ typedef struct __BUF_CACHE_T {
 /*  External Function Declarations                                      */
 /*----------------------------------------------------------------------*/
 
-INT32  buf_init(struct super_block *sb);
-INT32  buf_shutdown(struct super_block *sb);
-INT32  FAT_read(struct super_block *sb, UINT32 loc, UINT32 *content);
-INT32  FAT_write(struct super_block *sb, UINT32 loc, UINT32 content);
-UINT8 *FAT_getblk(struct super_block *sb, UINT32 sec);
-void   FAT_modify(struct super_block *sb, UINT32 sec);
+s32  buf_init(struct super_block *sb);
+s32  buf_shutdown(struct super_block *sb);
+s32  FAT_read(struct super_block *sb, u32 loc, u32 *content);
+s32  FAT_write(struct super_block *sb, u32 loc, u32 content);
+u8 *FAT_getblk(struct super_block *sb, u32 sec);
+void   FAT_modify(struct super_block *sb, u32 sec);
 void   FAT_release_all(struct super_block *sb);
 void   FAT_sync(struct super_block *sb);
-UINT8 *buf_getblk(struct super_block *sb, UINT32 sec);
-void   buf_modify(struct super_block *sb, UINT32 sec);
-void   exfat_buf_lock(struct super_block *sb, UINT32 sec);
-void   exfat_buf_unlock(struct super_block *sb, UINT32 sec);
-void   buf_release(struct super_block *sb, UINT32 sec);
+u8 *buf_getblk(struct super_block *sb, u32 sec);
+void   buf_modify(struct super_block *sb, u32 sec);
+void   buf_lock(struct super_block *sb, u32 sec);
+void   buf_unlock(struct super_block *sb, u32 sec);
+void   buf_release(struct super_block *sb, u32 sec);
 void   buf_release_all(struct super_block *sb);
 void   buf_sync(struct super_block *sb);
 
