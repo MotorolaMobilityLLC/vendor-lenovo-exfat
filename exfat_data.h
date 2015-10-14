@@ -1,4 +1,5 @@
 /*
+ *  Copyright (C) 2012-2013 Samsung Electronics Co., Ltd.
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -35,7 +36,7 @@
 #define _EXFAT_DATA_H
 
 #include "exfat_config.h"
-#include "exfat_global.h"
+
 /*======================================================================*/
 /*                                                                      */
 /*                        FFS CONFIGURATIONS                            */
@@ -45,9 +46,6 @@
 
 /* max number of root directory entries in FAT12/16 */
 /* (should be an exponential value of 2)            */
-#define MAX_DEVICE              2
-#define MAX_DRIVE               2
-#define MAX_OPEN                20
 #define MAX_DENTRY              512
 
 /* cache size (in number of sectors)                */
@@ -56,7 +54,5 @@
 #define FAT_CACHE_HASH_SIZE     64
 #define BUF_CACHE_SIZE          256
 #define BUF_CACHE_HASH_SIZE     64
-#define DEFAULT_CODEPAGE        437
-#define DEFAULT_IOCHARSET       "utf8"
 
 #endif /* _EXFAT_DATA_H */

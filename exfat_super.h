@@ -1,6 +1,7 @@
 /* Some of the source code in this file came from "linux/fs/fat/fat.h".  */
 
 /*
+ *  Copyright (C) 2012-2013 Samsung Electronics Co., Ltd.
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -28,13 +29,11 @@
 #include <linux/swap.h>
 
 #include "exfat_config.h"
-#include "exfat_global.h"
 #include "exfat_data.h"
 #include "exfat_oal.h"
 
 #include "exfat_blkdev.h"
 #include "exfat_cache.h"
-#include "exfat_part.h"
 #include "exfat_nls.h"
 #include "exfat_api.h"
 #include "exfat_core.h"
@@ -47,17 +46,21 @@
 #define EXFAT_IOCTL_GET_VOLUME_ID _IOR('r', 0x12, __u32)
 
 struct exfat_mount_options {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0)
+	kuid_t fs_uid;
+	kgid_t fs_gid;
+#else
 	uid_t fs_uid;
 	gid_t fs_gid;
+#endif
 	unsigned short fs_fmask;
 	unsigned short fs_dmask;
 	unsigned short allow_utime; /* permission for setting the [am]time */
 	unsigned short codepage;    /* codepage for shortname conversions */
 	char *iocharset;            /* charset for filename input/display */
 	unsigned char casesensitive;
-	unsigned char tz_utc;
 	unsigned char errors;       /* on error: continue, panic, remount-ro */
-#if EXFAT_CONFIG_DISCARD
+#ifdef CONFIG_EXFAT_DISCARD
 	unsigned char discard;      /* flag on if -o dicard specified and device support discard() */
 #endif /* CONFIG_EXFAT_DISCARD */
 };
@@ -85,7 +88,7 @@ struct exfat_sb_info {
 
 	spinlock_t inode_hash_lock;
 	struct hlist_head inode_hashtable[EXFAT_HASH_SIZE];
-#if EXFAT_CONFIG_KERNEL_DEBUG
+#ifdef CONFIG_EXFAT_KERNEL_DEBUG
 	long debug_flags;
 #endif /* CONFIG_EXFAT_KERNEL_DEBUG */
 };
@@ -104,11 +107,13 @@ struct exfat_inode_info {
 	struct rw_semaphore truncate_lock;
 #endif
 	struct inode vfs_inode;
+	struct rw_semaphore i_alloc_sem; /* protect bmap against truncate */
 };
 
 #define EXFAT_SB(sb)		((struct exfat_sb_info *)((sb)->s_fs_info))
 
-static inline struct exfat_inode_info *EXFAT_I(struct inode *inode) {
+static inline struct exfat_inode_info *EXFAT_I(struct inode *inode)
+{
 	return container_of(inode, struct exfat_inode_info, vfs_inode);
 }
 
@@ -150,9 +155,9 @@ static inline mode_t exfat_make_mode(struct exfat_sb_info *sbi,
 static inline u32 exfat_make_attr(struct inode *inode)
 {
 	if (exfat_mode_can_hold_ro(inode) && !(inode->i_mode & S_IWUGO))
-		return ((EXFAT_I(inode)->fid.attr) | ATTR_READONLY);
+		return (EXFAT_I(inode)->fid.attr) | ATTR_READONLY;
 	else
-		return (EXFAT_I(inode)->fid.attr);
+		return EXFAT_I(inode)->fid.attr;
 }
 
 static inline void exfat_save_attr(struct inode *inode, u32 attr)
@@ -162,13 +167,5 @@ static inline void exfat_save_attr(struct inode *inode, u32 attr)
 	else
 		EXFAT_I(inode)->fid.attr = attr & (ATTR_RWMASK | ATTR_READONLY);
 }
-
-/* exfat_xattr.c */
-extern int exfat_setxattr(struct dentry *dentry, const char *name,
-		const void *value, size_t size, int flags);
-extern ssize_t exfat_getxattr(struct dentry *dentry, const char *name,
-		void *value, size_t size);
-extern ssize_t exfat_listxattr(struct dentry *dentry, char *list, size_t size);
-extern int exfat_removexattr(struct dentry *dentry, const char *name);
 
 #endif /* _EXFAT_LINUX_H */
