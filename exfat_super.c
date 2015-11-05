@@ -1488,6 +1488,7 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 		map_bh(bh_result, sb, phys);
 	}
 
+	bh_result->b_private = sb;
 	bh_result->b_size = max_blocks << sb->s_blocksize_bits;
 	__unlock_super(sb);
 
@@ -1509,19 +1510,29 @@ static int exfat_readpages(struct file *file, struct address_space *mapping,
 	return ret;
 }
 
+static void exfat_end_buffer_async_write(struct buffer_head *bh, int uptodate)
+{
+	bdev_end_buffer_write(bh, uptodate, 0);
+}
+
 static int exfat_writepage(struct page *page, struct writeback_control *wbc)
 {
-	int ret;
-	ret = block_write_full_page(page, exfat_get_block, wbc);
-	return ret;
+	if (exfat_readonly(page->mapping->host->i_sb)) {
+		unlock_page(page);
+		SetPageError(page);
+		return 0;
+	}
+	return block_write_full_page_endio(page, exfat_get_block, wbc,
+					   exfat_end_buffer_async_write);
 }
 
 static int exfat_writepages(struct address_space *mapping,
 						struct writeback_control *wbc)
 {
-	int ret;
-	ret = mpage_writepages(mapping, wbc, exfat_get_block);
-	return ret;
+	if (exfat_readonly(mapping->host->i_sb))
+		return -EROFS;
+	/* get_block should be NULL to call ->writepage and catch end_io */
+	return mpage_writepages(mapping, wbc, NULL);
 }
 
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,34)
@@ -1934,7 +1945,7 @@ static void exfat_write_super(struct super_block *sb)
 
 	__set_sb_clean(sb);
 
-	if (!(sb->s_flags & MS_RDONLY))
+	if (!exfat_readonly(sb))
 		FsSyncVol(sb, 1);
 
 	__unlock_super(sb);
