@@ -94,6 +94,8 @@ static int exfat_default_codepage = CONFIG_EXFAT_DEFAULT_CODEPAGE;
 static char exfat_default_iocharset[] = CONFIG_EXFAT_DEFAULT_IOCHARSET;
 
 extern struct timezone sys_tz;
+extern int block_write_full_page_endio(struct page *page, get_block_t *get_block,
+			struct writeback_control *wbc, bh_end_io_t *handler);
 
 #define CHECK_ERR(x)	BUG_ON(x)
 
